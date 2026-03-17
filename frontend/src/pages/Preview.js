@@ -94,6 +94,24 @@ const Preview = () => {
     navigate('/');
   };
 
+  const handleSaveToGallery = async () => {
+    try {
+      await axios.post(`${API}/gallery/save`, {
+        photo_data: photo,
+        frame_name: frame.name,
+        frame_category: frame.category
+      });
+      toast.success('Foto berhasil disimpan ke galeri!');
+    } catch (error) {
+      console.error('Error saving to gallery:', error);
+      toast.error('Gagal menyimpan ke galeri');
+    }
+  };
+
+  const handleCustomize = () => {
+    navigate('/customize', { state: { photo, frame, photos } });
+  };
+
   if (!photo || !frame) return null;
 
   return (
@@ -205,6 +223,31 @@ const Preview = () => {
 
             <div className="grid grid-cols-2 gap-3">
               <JellyButton
+                onClick={handleSaveToGallery}
+                variant="secondary"
+                testId="save-to-gallery-btn"
+                className="inline-flex items-center justify-center gap-2"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z" />
+                </svg>
+                Simpan
+              </JellyButton>
+              <JellyButton
+                onClick={handleCustomize}
+                variant="secondary"
+                testId="customize-btn"
+                className="inline-flex items-center justify-center gap-2"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                </svg>
+                Customize
+              </JellyButton>
+            </div>
+
+            <div className="grid grid-cols-2 gap-3">
+              <JellyButton
                 onClick={handleRetake}
                 variant="secondary"
                 testId="retake-photo-btn"
@@ -214,10 +257,23 @@ const Preview = () => {
                 Foto Lagi
               </JellyButton>
               <JellyButton
+                onClick={() => navigate('/gallery')}
+                variant="secondary"
+                testId="view-gallery-btn"
+                className="inline-flex items-center justify-center gap-2"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                </svg>
+                Gallery
+              </JellyButton>
+            </div>
+            <div className="text-center">
+              <JellyButton
                 onClick={handleHome}
                 variant="secondary"
                 testId="go-home-btn"
-                className="inline-flex items-center justify-center gap-2"
+                className="w-full inline-flex items-center justify-center gap-2"
               >
                 <Home className="w-5 h-5" />
                 Home

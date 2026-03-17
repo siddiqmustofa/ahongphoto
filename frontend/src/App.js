@@ -6,6 +6,8 @@ import FrameSelect from "./pages/FrameSelect";
 import Capture from "./pages/Capture";
 import Filter from "./pages/Filter";
 import Preview from "./pages/Preview";
+import Gallery from "./pages/Gallery";
+import Customize from "./pages/Customize";
 
 function App() {
   return (
@@ -16,7 +18,9 @@ function App() {
           <Route path="/frame-select" element={<FrameSelect />} />
           <Route path="/capture" element={<Capture />} />
           <Route path="/filter" element={<Filter />} />
+          <Route path="/customize" element={<Customize />} />
           <Route path="/preview" element={<Preview />} />
+          <Route path="/gallery" element={<Gallery />} />
         </Routes>
       </BrowserRouter>
       <Toaster 

@@ -38,6 +38,16 @@ const Landing = () => {
           >
             Mulai Photobooth 📸
           </JellyButton>
+          
+          <motion.div className="mt-4">
+            <JellyButton 
+              onClick={() => navigate('/gallery')}
+              variant="secondary"
+              testId="view-gallery-btn"
+            >
+              Lihat Gallery 🖼️
+            </JellyButton>
+          </motion.div>
         </motion.div>
 
         <motion.div
