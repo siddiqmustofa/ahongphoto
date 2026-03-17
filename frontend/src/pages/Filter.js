@@ -28,165 +28,101 @@ const Filter = () => {
   const frame = location.state?.frame;
 
   useEffect(() => {
+    console.log('FILTER PAGE: Photos:', photos.length, 'Frame:', frame?.name);
+    
     if (!photos || photos.length === 0 || !frame) {
-      console.error('Missing photos or frame');
-      toast.error('Data tidak lengkap. Kembali ke awal.');
+      console.error('Missing data');
+      toast.error('Data foto tidak ditemukan!');
       setTimeout(() => navigate('/frame-select'), 2000);
       return;
     }
-    console.log('Filter page: Got', photos.length, 'photos');
-  }, [photos, frame, navigate]);
+    
+    setTimeout(() => applyFilterAndFrame(), 500);
+  }, []);
 
   useEffect(() => {
-    if (photos && photos.length > 0 && frame) {
-      console.log('Applying filter:', selectedFilter.name);
+    if (selectedFilter && photos.length > 0 && !isProcessing) {
       applyFilterAndFrame();
     }
-  }, [selectedFilter]);
-
-  useEffect(() => {
-    if (photos && photos.length > 0 && frame && !processedImage) {
-      console.log('Initial render');
-      applyFilterAndFrame();
-    }
-  }, [photos, frame]);
+  }, [selectedFilter.id]);
 
   const applyFilterAndFrame = async () => {
-    if (isProcessing) {
-      console.log('Already processing, skipping...');
-      return;
-    }
-    
-    const canvas = canvasRef.current;
-    if (!canvas) {
-      console.error('Canvas not found');
-      return;
-    }
+    if (isProcessing || !photos || photos.length === 0) return;
 
-    if (!photos || photos.length === 0) {
-      console.error('No photos to process');
-      return;
-    }
+    const canvas = canvasRef.current;
+    if (!canvas) return;
 
     setIsProcessing(true);
-    console.log('Starting to process', photos.length, 'photos...');
+    console.log('Processing', photos.length, 'photos...');
 
     try {
       const ctx = canvas.getContext('2d');
-      const stripWidth = 300;
-      const stripHeight = 800;
-      
-      canvas.width = stripWidth;
-      canvas.height = stripHeight;
+      canvas.width = 300;
+      canvas.height = 800;
 
-      // Fill background
       ctx.fillStyle = '#FFD1DC';
-      ctx.fillRect(0, 0, stripWidth, stripHeight);
+      ctx.fillRect(0, 0, 300, 800);
 
-      const spacing = 20;
-      const availableHeight = stripHeight - (spacing * (photos.length + 1));
-      const photoHeight = Math.floor(availableHeight / photos.length);
+      const photoHeight = Math.floor((800 - 80) / 3);
       
-      console.log('Strip dimensions:', stripWidth, 'x', stripHeight);
-      console.log('Each photo height:', photoHeight);
-
-      // Load all images
-      const loadImage = (src) => {
+      const imagePromises = photos.map((photoData) => {
         return new Promise((resolve, reject) => {
           const img = new Image();
           img.crossOrigin = 'anonymous';
-          img.onload = () => {
-            console.log('Image loaded successfully');
-            resolve(img);
-          };
-          img.onerror = (err) => {
-            console.error('Image load error:', err);
-            reject(err);
-          };
-          img.src = src;
+          img.onload = () => resolve(img);
+          img.onerror = reject;
+          img.src = photoData;
         });
-      };
-
-      const imagePromises = photos.map((photo, idx) => {
-        console.log(`Loading photo ${idx + 1}...`);
-        return loadImage(photo);
       });
 
       const images = await Promise.all(imagePromises);
-      console.log('All images loaded!');
+      console.log('Images loaded:', images.length);
       
-      // Draw each photo
       images.forEach((img, index) => {
-        const yPos = spacing + (index * (photoHeight + spacing));
-        
-        console.log(`Drawing photo ${index + 1} at Y:${yPos}`);
-        
+        const yPos = 20 + (index * (photoHeight + 20));
         ctx.save();
         ctx.filter = selectedFilter.filter;
-        
-        // Calculate scaling to cover the area
-        const scale = Math.max(stripWidth / img.width, photoHeight / img.height);
-        const scaledWidth = img.width * scale;
-        const scaledHeight = img.height * scale;
-        const xOffset = (stripWidth - scaledWidth) / 2;
-        const yOffset = (photoHeight - scaledHeight) / 2;
-        
-        ctx.drawImage(
-          img, 
-          xOffset, 
-          yPos + yOffset, 
-          scaledWidth, 
-          scaledHeight
-        );
-        
+        const scale = Math.max(300 / img.width, photoHeight / img.height);
+        const sw = img.width * scale;
+        const sh = img.height * scale;
+        const x = (300 - sw) / 2;
+        const y = (photoHeight - sh) / 2;
+        ctx.drawImage(img, x, yPos + y, sw, sh);
         ctx.restore();
       });
 
-      console.log('All photos drawn');
-
-      // Apply frame overlay
       ctx.filter = 'none';
       
-      if (frame && frame.svg) {
-        console.log('Applying frame overlay...');
-        
+      if (frame?.svg) {
         const svgBlob = new Blob([frame.svg], { type: 'image/svg+xml;charset=utf-8' });
         const svgUrl = URL.createObjectURL(svgBlob);
         
-        const svgImg = new Image();
-        
-        const svgLoadPromise = new Promise((resolve, reject) => {
+        await new Promise((resolve) => {
+          const svgImg = new Image();
           svgImg.onload = () => {
-            console.log('Frame SVG loaded');
-            ctx.drawImage(svgImg, 0, 0, stripWidth, stripHeight);
+            ctx.drawImage(svgImg, 0, 0, 300, 800);
             URL.revokeObjectURL(svgUrl);
             resolve();
           };
-          
-          svgImg.onerror = (err) => {
-            console.error('SVG load error:', err);
+          svgImg.onerror = () => {
             URL.revokeObjectURL(svgUrl);
-            reject(err);
+            resolve();
           };
-          
           svgImg.src = svgUrl;
         });
-        
-        await svgLoadPromise;
       }
 
-      // Convert to data URL
-      const finalImage = canvas.toDataURL('image/jpeg', 0.95);
-      console.log('Final image created, length:', finalImage.length);
+      const result = canvas.toDataURL('image/jpeg', 0.95);
+      console.log('Strip created:', result.length, 'bytes');
       
-      setProcessedImage(finalImage);
+      setProcessedImage(result);
       setIsProcessing(false);
-      toast.success('Strip foto berhasil dibuat!');
+      toast.success('Strip foto berhasil!');
       
     } catch (error) {
-      console.error('Error processing images:', error);
+      console.error('Processing error:', error);
       setIsProcessing(false);
-      toast.error('Gagal memproses foto. Coba lagi.');
+      toast.error('Gagal memproses foto');
     }
   };
 
@@ -195,13 +131,11 @@ const Filter = () => {
       toast.error('Tunggu proses selesai...');
       return;
     }
-    console.log('Navigating to preview with processed image');
+    
+    console.log('Navigating to preview with image:', processedImage.length);
     navigate('/preview', { 
-      state: { 
-        photo: processedImage, 
-        frame,
-        photos 
-      } 
+      state: { photo: processedImage, frame, photos },
+      replace: false
     });
   };
 
@@ -209,8 +143,8 @@ const Filter = () => {
     return (
       <div className="candy-gradient-bg min-h-screen flex items-center justify-center">
         <GlassCard className="text-center p-8">
-          <div className="animate-spin rounded-full h-12 w-12 border-4 border-candy-bright-pink border-t-transparent mx-auto mb-4"></div>
-          <p className="text-[#592E39] font-medium">Memuat...</p>
+          <div className="animate-spin rounded-full h-12 w-12 border-4 border-candy-bright-pink border-t-transparent mx-auto mb-4" />
+          <p className="text-gray-700 font-medium">Memuat...</p>
         </GlassCard>
       </div>
     );
@@ -225,45 +159,42 @@ const Filter = () => {
           <button
             onClick={() => navigate('/capture', { state: { frame } })}
             className="p-3 rounded-full bg-white/40 hover:bg-white/80 transition-all"
-            data-testid="back-to-capture-btn"
           >
             <ChevronLeft className="w-6 h-6 text-candy-bright-pink" />
           </button>
           
-          <h2 className="text-2xl md:text-3xl font-bold text-[#592E39] font-['Fredoka']">
-            Pilih Filter ✨
+          <h2 className="text-2xl md:text-3xl font-bold text-gray-800">
+            Pilih Filter
           </h2>
           
-          <div className="w-12"></div>
+          <div className="w-12" />
         </div>
 
-        <div className="grid md:grid-cols-[1fr,2fr] gap-6 mb-6">
+        <div className="grid md:grid-cols-2 gap-6">
           <GlassCard>
-            <h3 className="text-lg font-bold text-[#592E39] mb-3 font-['Quicksand'] text-center">
+            <h3 className="text-lg font-bold text-gray-800 mb-3 text-center">
               Preview Strip
             </h3>
-            <div className="aspect-[3/8] rounded-2xl overflow-hidden bg-gradient-to-b from-candy-soft-pink to-candy-lavender relative">
+            <div className="aspect-[3/8] rounded-2xl overflow-hidden bg-gradient-to-b from-pink-200 to-purple-200 relative">
               <canvas ref={canvasRef} className="hidden" />
               
-              {isProcessing && (
-                <div className="absolute inset-0 flex items-center justify-center bg-white/20 backdrop-blur-sm z-10">
+              {isProcessing ? (
+                <div className="absolute inset-0 flex items-center justify-center bg-white/20 backdrop-blur-sm">
                   <div className="text-center">
-                    <div className="animate-spin rounded-full h-12 w-12 border-4 border-candy-bright-pink border-t-transparent mx-auto mb-4"></div>
-                    <p className="text-[#592E39] font-medium">Memproses strip...</p>
+                    <div className="animate-spin rounded-full h-12 w-12 border-4 border-pink-500 border-t-transparent mx-auto mb-4" />
+                    <p className="text-gray-700 font-medium">Memproses...</p>
                   </div>
                 </div>
-              )}
-              
-              {processedImage && !isProcessing ? (
+              ) : processedImage ? (
                 <img
                   src={processedImage}
-                  alt="Preview Strip"
+                  alt="Preview"
                   className="w-full h-full object-cover"
                   data-testid="filtered-preview"
                 />
-              ) : !isProcessing && (
+              ) : (
                 <div className="absolute inset-0 flex items-center justify-center">
-                  <p className="text-[#8B5F6D] font-medium">Generating preview...</p>
+                  <p className="text-gray-600">Loading...</p>
                 </div>
               )}
             </div>
@@ -271,7 +202,7 @@ const Filter = () => {
 
           <div>
             <GlassCard className="mb-6">
-              <h3 className="text-xl font-bold text-[#592E39] mb-4 font-['Quicksand']">
+              <h3 className="text-xl font-bold text-gray-800 mb-4">
                 Pilih Filter
               </h3>
               <div className="grid grid-cols-3 gap-3">
@@ -281,13 +212,12 @@ const Filter = () => {
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
                     onClick={() => setSelectedFilter(filter)}
-                    data-testid={`filter-option-${filter.id}`}
                     disabled={isProcessing}
                     className={`p-4 rounded-2xl transition-all ${
                       selectedFilter.id === filter.id
-                        ? 'bg-candy-bright-pink text-white shadow-lg scale-105'
-                        : 'bg-white/40 text-[#592E39] hover:bg-white/60'
-                    } ${isProcessing ? 'opacity-50 cursor-not-allowed' : ''}`}
+                        ? 'bg-pink-500 text-white shadow-lg'
+                        : 'bg-white/40 text-gray-800 hover:bg-white/60'
+                    } ${isProcessing ? 'opacity-50' : ''}`}
                   >
                     <div className="text-sm font-bold">{filter.name}</div>
                   </motion.button>
@@ -296,12 +226,12 @@ const Filter = () => {
             </GlassCard>
 
             <GlassCard className="mb-6">
-              <h3 className="text-lg font-bold text-[#592E39] mb-3 font-['Quicksand']">
-                Foto yang Diambil ({photos.length})
+              <h3 className="text-lg font-bold text-gray-800 mb-3">
+                Foto ({photos.length})
               </h3>
               <div className="grid grid-cols-3 gap-2">
                 {photos.map((photo, idx) => (
-                  <div key={idx} className="aspect-square rounded-lg overflow-hidden border-2 border-candy-bright-pink/30">
+                  <div key={idx} className="aspect-square rounded-lg overflow-hidden border-2 border-pink-300">
                     <img 
                       src={photo} 
                       alt={`Foto ${idx + 1}`} 
@@ -313,16 +243,14 @@ const Filter = () => {
               </div>
             </GlassCard>
 
-            <div className="text-center">
-              <JellyButton
-                onClick={handleContinue}
-                disabled={!processedImage || isProcessing}
-                testId="continue-to-preview-btn"
-                className="w-full"
-              >
-                {isProcessing ? 'Memproses...' : 'Lanjut ke Preview →'}
-              </JellyButton>
-            </div>
+            <JellyButton
+              onClick={handleContinue}
+              disabled={!processedImage || isProcessing}
+              testId="continue-to-preview-btn"
+              className="w-full"
+            >
+              {isProcessing ? 'Memproses...' : 'Lanjut ke Preview'}
+            </JellyButton>
           </div>
         </div>
       </div>

@@ -26,13 +26,18 @@ const Preview = () => {
   const photos = location.state?.photos;
 
   useEffect(() => {
+    console.log('=== PREVIEW PAGE DEBUG ===');
+    console.log('Photo received:', photo ? `${photo.substring(0, 100)}... (${photo.length} bytes)` : 'NULL');
+    console.log('Frame received:', frame?.name || 'NULL');
+    console.log('Photos array:', photos?.length || 0);
+    
     if (!photo || !frame) {
-      console.error('Missing photo or frame data');
+      console.error('❌ Missing photo or frame data');
       toast.error('Data tidak lengkap. Kembali ke awal.');
       setTimeout(() => navigate('/frame-select'), 2000);
       return;
     }
-    console.log('Preview loaded with photo length:', photo?.length);
+    console.log('✅ Preview data OK');
   }, [photo, frame, navigate]);
 
   const handleDownload = () => {
