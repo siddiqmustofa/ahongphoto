@@ -1,0 +1,128 @@
+{
+  "identity": "E1 - The Anti-AI Designer",
+  "theme": {
+    "name": "Sweet Candy Bubble Pop",
+    "description": "A glossy, playful, and modern aesthetic inspired by K-pop visuals, gummy candies, and soap bubbles. High gloss, soft shadows, and extreme roundness.",
+    "vibe": "Fun, Friendly, Youthful, Glossy, Translucent",
+    "mode": "light"
+  },
+  "typography": {
+    "primary_font": "Nunito, sans-serif",
+    "secondary_font": "Quicksand, sans-serif",
+    "accent_font": "Fredoka, cursive",
+    "scale": {
+      "h1": "text-5xl md:text-7xl font-extrabold tracking-tight",
+      "h2": "text-3xl md:text-5xl font-bold",
+      "body": "text-lg md:text-xl font-medium leading-relaxed"
+    },
+    "instructions": "Import fonts from Google Fonts: Nunito (400, 700, 900), Quicksand (500, 700), Fredoka (One). Use Fredoka for the Logo and giant playful headings. Use Nunito for UI elements."
+  },
+  "colors": {
+    "palette": {
+      "primary": "#FFD1DC",
+      "primary_foreground": "#592E39",
+      "secondary": "#FFE4E1",
+      "accent": "#FF69B4",
+      "accent_hover": "#FF1493",
+      "background": "#FFF0F5",
+      "text_main": "#4A2c36",
+      "text_muted": "#8B5F6D",
+      "glass_bg": "rgba(255, 255, 255, 0.4)",
+      "glass_border": "rgba(255, 255, 255, 0.6)"
+    },
+    "gradients": {
+      "main_bg": "linear-gradient(135deg, #FFD1DC 0%, #E6E6FA 50%, #B0E0E6 100%)",
+      "candy_button": "linear-gradient(180deg, #FF85C0 0%, #FF69B4 100%)",
+      "bubble_sheen": "linear-gradient(180deg, rgba(255,255,255,0.8) 0%, rgba(255,255,255,0) 100%)"
+    }
+  },
+  "visual_enhancers": {
+    "glassmorphism": {
+      "base": "bg-white/30 backdrop-blur-xl border border-white/50 shadow-[0_8px_32px_rgba(255,105,180,0.15)]",
+      "heavy": "bg-white/60 backdrop-blur-2xl border-2 border-white shadow-xl"
+    },
+    "shadows": {
+      "soft_pop": "0 10px 25px -5px rgba(255, 105, 180, 0.3), 0 8px 10px -6px rgba(255, 105, 180, 0.1)",
+      "inner_glow": "inset 0 2px 4px 0 rgba(255, 255, 255, 0.6)"
+    },
+    "border_radius": {
+      "default": "rounded-3xl",
+      "pill": "rounded-full",
+      "card": "rounded-[2rem]"
+    }
+  },
+  "components": {
+    "buttons": {
+      "primary": "relative overflow-hidden transition-all duration-300 transform hover:-translate-y-1 active:translate-y-0 rounded-full bg-gradient-to-b from-[#FF85C0] to-[#FF69B4] text-white font-black text-xl px-10 py-4 shadow-[0_4px_0_#C71585,0_10px_20px_rgba(255,20,147,0.4)] hover:shadow-[0_6px_0_#C71585,0_15px_25px_rgba(255,20,147,0.5)] active:shadow-[0_2px_0_#C71585] border-t-2 border-white/40",
+      "secondary": "bg-white/50 hover:bg-white/80 text-[#FF1493] font-bold rounded-full px-8 py-3 border-2 border-[#FF69B4]/30 backdrop-blur-md transition-all shadow-sm hover:shadow-md",
+      "icon": "p-4 rounded-full bg-white/40 hover:bg-white/80 text-[#FF69B4] transition-all hover:scale-110 shadow-lg border border-white/50"
+    },
+    "cards": {
+      "container": "relative bg-white/40 backdrop-blur-xl border border-white/60 rounded-[2.5rem] p-8 shadow-[0_8px_32px_rgba(255,182,193,0.2)] overflow-hidden",
+      "frame_item": "cursor-pointer group relative aspect-[3/4] rounded-2xl overflow-hidden border-4 border-transparent hover:border-white transition-all duration-300 hover:scale-105 shadow-md hover:shadow-xl bg-white/20"
+    },
+    "inputs": {
+      "default": "bg-white/70 border-2 border-white/50 focus:border-[#FF69B4] rounded-2xl px-6 py-4 text-[#FF1493] placeholder-[#FFB6C1] focus:ring-4 focus:ring-[#FF69B4]/20 outline-none transition-all font-medium text-lg"
+    }
+  },
+  "layout_rules": {
+    "spacing": "Use 'p-6' or 'p-8' as standard padding. 'gap-6' for grids.",
+    "containers": "Max-width containers should be 'max-w-md' (mobile focus) to 'max-w-4xl' (desktop view). Center everything vertically and horizontally for the photobooth feel.",
+    "grid": "Use simple grids. 'grid-cols-2' for frames on mobile, 'grid-cols-4' on desktop."
+  },
+  "animations": {
+    "float": "animate-float (define keyframes: 0% {transform: translateY(0px)} 50% {transform: translateY(-20px)} 100% {transform: translateY(0px)})",
+    "pop": "animate-pop (define keyframes: 0% {transform: scale(0.9)} 50% {transform: scale(1.1)} 100% {transform: scale(1)})",
+    "shimmer": "animate-shimmer (gradient movement)"
+  },
+  "assets": {
+    "images": [
+      {
+        "category": "background_texture",
+        "url": "https://images.unsplash.com/photo-1621959003093-935de61d5ac1?crop=entropy&cs=srgb&fm=jpg&q=85",
+        "description": "Abstract pink pastel fluid art"
+      },
+      {
+        "category": "bubbles_overlay",
+        "url": "https://images.unsplash.com/photo-1764346550943-5540a9270da4?crop=entropy&cs=srgb&fm=jpg&q=85",
+        "description": "Soap bubbles floating"
+      }
+    ]
+  },
+  "page_specifics": {
+    "landing": {
+      "layout": "Centered logo, floating bubbles background, massive 'Start' CTA.",
+      "elements": "Use a 3D-style text effect for 'GlowBox'."
+    },
+    "frame_selection": {
+      "layout": "Grid of available frames. Selected state must be obvious (thick white border + checkmark).",
+      "details": "Frames should be transparent PNGs overlaying a placeholder face."
+    },
+    "capture": {
+      "layout": "Webcam feed central. Countdown overlay (big numbers). Controls at bottom.",
+      "ui": "Rounded camera viewfinder. Flash effect on capture."
+    },
+    "preview": {
+      "layout": "Polaroid style result. Actions (Email, Download, Retake) below.",
+      "details": "The photo should have the selected frame applied."
+    }
+  },
+  "universal_guidelines": [
+    "NEVER use sharp corners. Everything must be rounded-xl, 2xl, or 3xl.",
+    "NEVER use pure black text. Use deep maroon or dark charcoal.",
+    "ALWAYS add a 'glass' reflection overlay on buttons (a subtle white gradient at the top).",
+    "Use 'backdrop-blur' generously to separate layers.",
+    "Interactive elements must have a 'scale' effect on active/click (feeling tactile).",
+    "Ensure the webcam feed has `scale-x-[-1]` (mirror mode) for natural feel."
+  ],
+  "implementation_steps": [
+    "Step 1: Install fonts (Nunito, Fredoka) via Google Fonts import in index.css.",
+    "Step 2: Update tailwind.config.js with 'sweet' color palette and custom keyframes (float, pop).",
+    "Step 3: Create a `Layout` component that includes the animated bubble background.",
+    "Step 4: Build the `GlassCard` and `JellyButton` reusable components.",
+    "Step 5: Implement the Landing Page.",
+    "Step 6: Implement Frame Selection (mock 4 candy frames).",
+    "Step 7: Implement Webcam Capture (using react-webcam).",
+    "Step 8: Implement Filter/Preview/Email flow."
+  ]
+}
