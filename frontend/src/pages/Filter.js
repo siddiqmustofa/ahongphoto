@@ -29,10 +29,14 @@ const Filter = () => {
   const frame = location.state?.frame;
 
   useEffect(() => {
-    console.log('FILTER: Photos:', photos.length, 'Frame:', frame?.name);
+    console.log('=== FILTER PAGE LOADED ===');
+    console.log('location.state:', location.state);
+    console.log('Photos count:', photos.length);
+    console.log('Photos data preview:', photos.map((p, i) => `Photo ${i+1}: ${p?.substring(0, 50)}...`));
+    console.log('Frame:', frame?.name, frame?.id);
     
     if (!photos || photos.length === 0 || !frame) {
-      console.error('Missing data');
+      console.error('FILTER ERROR: Missing data - photos:', photos.length, 'frame:', !!frame);
       toast.error('Data foto tidak ditemukan!');
       setTimeout(() => navigate('/frame-select'), 2000);
       return;
@@ -51,10 +55,15 @@ const Filter = () => {
     if (isProcessing || !photos || photos.length === 0) return;
 
     const canvas = canvasRef.current;
-    if (!canvas) return;
+    if (!canvas) {
+      console.error('Canvas not found!');
+      return;
+    }
 
     setIsProcessing(true);
-    console.log('Processing with 4R layout...');
+    console.log('=== PROCESSING PHOTO STRIP ===');
+    console.log('Photos to process:', photos.length);
+    console.log('Frame layout:', frame.photoLayout?.length, 'slots');
 
     try {
       const ctx = canvas.getContext('2d');
@@ -67,19 +76,35 @@ const Filter = () => {
       ctx.fillStyle = '#FFD1DC';
       ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-      // Load photos
-      const imagePromises = photos.map((photoData) => {
+      // Load photos with better error handling
+      const loadImage = (photoData, index) => {
         return new Promise((resolve, reject) => {
+          if (!photoData || typeof photoData !== 'string') {
+            console.error(`Photo ${index + 1}: Invalid data`);
+            reject(new Error(`Invalid photo data at index ${index}`));
+            return;
+          }
+          
           const img = new Image();
           img.crossOrigin = 'anonymous';
-          img.onload = () => resolve(img);
-          img.onerror = reject;
+          
+          img.onload = () => {
+            console.log(`Photo ${index + 1}: Loaded (${img.width}x${img.height})`);
+            resolve(img);
+          };
+          
+          img.onerror = (e) => {
+            console.error(`Photo ${index + 1}: Failed to load`, e);
+            reject(new Error(`Failed to load image at index ${index}`));
+          };
+          
           img.src = photoData;
         });
-      });
+      };
 
+      const imagePromises = photos.map((photoData, index) => loadImage(photoData, index));
       const images = await Promise.all(imagePromises);
-      console.log('Images loaded:', images.length);
+      console.log('All images loaded:', images.length);
       
       // Auto-place photos using frame layout
       const photoLayout = frame.photoLayout || [];
@@ -107,7 +132,7 @@ const Filter = () => {
           );
           
           ctx.restore();
-          console.log(`Photo ${index + 1} placed at (${layout.x}, ${layout.y})`);
+          console.log(`Photo ${index + 1} placed at (${layout.x}, ${layout.y}) size: ${scaledWidth}x${scaledHeight}`);
         }
       });
 
@@ -123,10 +148,12 @@ const Filter = () => {
           svgImg.onload = () => {
             ctx.drawImage(svgImg, 0, 0, canvas.width, canvas.height);
             URL.revokeObjectURL(svgUrl);
+            console.log('SVG overlay applied');
             resolve();
           };
           svgImg.onerror = () => {
             URL.revokeObjectURL(svgUrl);
+            console.warn('SVG overlay failed to load');
             resolve();
           };
           svgImg.src = svgUrl;
@@ -134,7 +161,9 @@ const Filter = () => {
       }
 
       const result = canvas.toDataURL('image/jpeg', 0.95);
-      console.log('4R Strip created:', result.length, 'bytes');
+      console.log('=== STRIP COMPLETE ===');
+      console.log('Result size:', result.length, 'bytes');
+      console.log('Result preview:', result.substring(0, 50));
       
       setProcessedImage(result);
       setIsProcessing(false);
@@ -162,7 +191,7 @@ const Filter = () => {
 
   if (!photos || photos.length === 0 || !frame) {
     return (
-      <div className="candy-gradient-bg min-h-screen flex items-center justify-center">
+      <div className="candy-gradient-bg h-screen flex items-center justify-center overflow-hidden">
         <GlassCard className="text-center p-8">
           <div className="animate-spin rounded-full h-12 w-12 border-4 border-pink-500 border-t-transparent mx-auto mb-4" />
           <p className="text-gray-700 font-medium">Loading...</p>
@@ -172,41 +201,41 @@ const Filter = () => {
   }
 
   return (
-    <div className="candy-gradient-bg min-h-screen py-8 px-4">
+    <div className="candy-gradient-bg h-screen flex flex-col py-4 px-4 overflow-hidden">
       <FloatingBubbles />
       
-      <div className="relative z-10 max-w-6xl mx-auto">
-        <div className="flex items-center justify-between mb-8">
+      <div className="relative z-10 max-w-6xl mx-auto flex-1 flex flex-col min-h-0">
+        <div className="flex items-center justify-between mb-4 flex-shrink-0">
           <button
             onClick={() => navigate('/capture', { state: { frame } })}
-            className="p-3 rounded-full bg-white/40 hover:bg-white/80 transition-all shadow-md"
+            className="p-2 rounded-full bg-white/40 hover:bg-white/80 transition-all shadow-md"
           >
-            <ChevronLeft className="w-6 h-6 text-pink-600" />
+            <ChevronLeft className="w-5 h-5 text-pink-600" />
           </button>
           
           <div className="text-center">
-            <h2 className="text-2xl md:text-3xl font-bold text-gray-800" style={{ fontFamily: 'Fredoka, cursive' }}>
+            <h2 className="text-xl md:text-2xl font-bold text-gray-800" style={{ fontFamily: 'Fredoka, cursive' }}>
               Pilih Filter ✨
             </h2>
-            <p className="text-sm text-gray-600 mt-1">Ukuran 4R (10.2 x 15.2 cm)</p>
+            <p className="text-xs text-gray-600 mt-0.5">Ukuran 4R (10.2 x 15.2 cm)</p>
           </div>
           
-          <div className="w-12" />
+          <div className="w-10" />
         </div>
 
-        <div className="grid md:grid-cols-[1fr,2fr] gap-6">
-          <GlassCard>
-            <h3 className="text-lg font-bold text-gray-800 mb-3 text-center" style={{ fontFamily: 'Quicksand, sans-serif' }}>
+        <div className="grid md:grid-cols-[1fr,2fr] gap-4 flex-1 min-h-0 overflow-hidden">
+          <GlassCard className="flex flex-col overflow-hidden">
+            <h3 className="text-base font-bold text-gray-800 mb-2 text-center flex-shrink-0" style={{ fontFamily: 'Quicksand, sans-serif' }}>
               Preview Strip 4R
             </h3>
-            <div className="aspect-[2/3] rounded-2xl overflow-hidden bg-gradient-to-b from-pink-200 to-purple-200 relative shadow-xl">
+            <div className="aspect-[2/3] rounded-xl overflow-hidden bg-gradient-to-b from-pink-200 to-purple-200 relative shadow-xl max-h-[50vh]">
               <canvas ref={canvasRef} className="hidden" />
               
               {isProcessing ? (
                 <div className="absolute inset-0 flex items-center justify-center bg-white/20 backdrop-blur-sm">
                   <div className="text-center">
-                    <div className="animate-spin rounded-full h-12 w-12 border-4 border-pink-500 border-t-transparent mx-auto mb-4" />
-                    <p className="text-gray-700 font-medium">Processing...</p>
+                    <div className="animate-spin rounded-full h-10 w-10 border-4 border-pink-500 border-t-transparent mx-auto mb-3" />
+                    <p className="text-gray-700 font-medium text-sm">Processing...</p>
                   </div>
                 </div>
               ) : processedImage ? (
@@ -218,27 +247,24 @@ const Filter = () => {
                 />
               ) : (
                 <div className="absolute inset-0 flex items-center justify-center">
-                  <p className="text-gray-600">Loading...</p>
+                  <p className="text-gray-600 text-sm">Loading...</p>
                 </div>
               )}
             </div>
             
-            <div className="mt-3 text-center">
-              <p className="text-xs text-gray-600">
-                📐 {PAPER_4R.width} x {PAPER_4R.height} px
-              </p>
-              <p className="text-xs text-gray-600">
-                🖨️ Print: {PAPER_4R.printWidth} x {PAPER_4R.printHeight} px @ {PAPER_4R.printDpi} DPI
+            <div className="mt-2 text-center flex-shrink-0">
+              <p className="text-[10px] text-gray-600">
+                📐 {PAPER_4R.width} x {PAPER_4R.height} px | 🖨️ {PAPER_4R.printDpi} DPI
               </p>
             </div>
           </GlassCard>
 
-          <div>
-            <GlassCard className="mb-6">
-              <h3 className="text-xl font-bold text-gray-800 mb-4" style={{ fontFamily: 'Quicksand, sans-serif' }}>
+          <div className="flex flex-col gap-3 overflow-hidden">
+            <GlassCard className="flex-shrink-0">
+              <h3 className="text-lg font-bold text-gray-800 mb-3" style={{ fontFamily: 'Quicksand, sans-serif' }}>
                 Pilih Filter
               </h3>
-              <div className="grid grid-cols-3 gap-3">
+              <div className="grid grid-cols-3 gap-2">
                 {filters.map((filter) => (
                   <motion.button
                     key={filter.id}
@@ -246,20 +272,20 @@ const Filter = () => {
                     whileTap={{ scale: 0.95 }}
                     onClick={() => setSelectedFilter(filter)}
                     disabled={isProcessing}
-                    className={`p-4 rounded-2xl transition-all shadow-md ${
+                    className={`p-3 rounded-xl transition-all shadow-md ${
                       selectedFilter.id === filter.id
                         ? 'bg-gradient-to-b from-pink-400 to-pink-600 text-white'
                         : 'bg-white/60 text-gray-800 hover:bg-white/80'
                     } ${isProcessing ? 'opacity-50' : ''}`}
                   >
-                    <div className="text-sm font-bold">{filter.name}</div>
+                    <div className="text-xs font-bold">{filter.name}</div>
                   </motion.button>
                 ))}
               </div>
             </GlassCard>
 
-            <GlassCard className="mb-6">
-              <h3 className="text-lg font-bold text-gray-800 mb-3" style={{ fontFamily: 'Quicksand, sans-serif' }}>
+            <GlassCard className="flex-shrink-0">
+              <h3 className="text-base font-bold text-gray-800 mb-2" style={{ fontFamily: 'Quicksand, sans-serif' }}>
                 Foto Terambil ({photos.length})
               </h3>
               <div className="grid grid-cols-3 gap-2">
@@ -280,7 +306,7 @@ const Filter = () => {
               onClick={handleContinue}
               disabled={!processedImage || isProcessing}
               testId="continue-to-preview-btn"
-              className="w-full text-lg"
+              className="w-full flex-shrink-0"
             >
               {isProcessing ? 'Processing...' : 'Lanjut ke Preview →'}
             </JellyButton>

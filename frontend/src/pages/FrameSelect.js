@@ -34,11 +34,11 @@ const FrameSelect = () => {
   };
 
   return (
-    <div className="candy-gradient-bg min-h-screen py-8 px-4">
+    <div className="candy-gradient-bg h-screen flex flex-col py-4 px-4 overflow-hidden">
       <FloatingBubbles />
       
-      <div className="relative z-10 max-w-7xl mx-auto">
-        <div className="flex items-center justify-between mb-6">
+      <div className="relative z-10 max-w-7xl mx-auto flex-1 flex flex-col min-h-0">
+        <div className="flex items-center justify-between mb-4 flex-shrink-0">
           <button
             onClick={() => navigate('/')}
             className="p-3 rounded-full bg-white/40 hover:bg-white/80 transition-all shadow-md"
@@ -47,18 +47,18 @@ const FrameSelect = () => {
             <ChevronLeft className="w-6 h-6 text-pink-600" />
           </button>
           
-          <h2 className="text-2xl md:text-4xl font-bold text-gray-800" style={{ fontFamily: 'Fredoka, cursive' }}>
+          <h2 className="text-xl md:text-3xl font-bold text-gray-800" style={{ fontFamily: 'Fredoka, cursive' }}>
             Pilih Frame Strip 🎀
           </h2>
-          <p className="text-sm text-gray-600 mt-1">Ukuran 4R (10.2 x 15.2 cm)</p>
+          <p className="text-xs text-gray-600 mt-1">Ukuran 4R (10.2 x 15.2 cm)</p>
           
           <div className="w-12" />
         </div>
 
         {/* Category Filter */}
-        <div className="mb-6">
-          <GlassCard className="p-4">
-            <div className="flex flex-wrap gap-3 justify-center">
+        <div className="mb-4 flex-shrink-0">
+          <GlassCard className="p-3">
+            <div className="flex flex-wrap gap-2 justify-center">
               {frameCategories.map((category) => (
                 <motion.button
                   key={category}
@@ -69,7 +69,7 @@ const FrameSelect = () => {
                     toast.info(`Kategori: ${category}`);
                   }}
                   data-testid={`category-${category.toLowerCase()}`}
-                  className={`px-6 py-3 rounded-full font-bold text-base transition-all shadow-md ${
+                  className={`px-4 py-2 rounded-full font-bold text-sm transition-all shadow-md ${
                     selectedCategory === category
                       ? 'bg-gradient-to-b from-pink-400 to-pink-600 text-white scale-105'
                       : 'bg-white/60 text-gray-800 hover:bg-white/80'
@@ -83,27 +83,27 @@ const FrameSelect = () => {
         </div>
 
         {/* Main Content Grid */}
-        <div className="grid lg:grid-cols-[2fr,1fr] gap-6">
+        <div className="grid lg:grid-cols-[2fr,1fr] gap-4 flex-1 min-h-0 overflow-hidden">
           {/* Frames Grid */}
-          <GlassCard>
-            <h3 className="text-xl font-bold text-gray-800 mb-4" style={{ fontFamily: 'Quicksand, sans-serif' }}>
+          <GlassCard className="overflow-hidden flex flex-col">
+            <h3 className="text-lg font-bold text-gray-800 mb-3 flex-shrink-0" style={{ fontFamily: 'Quicksand, sans-serif' }}>
               Pilih Frame ({filteredFrames.length} tersedia)
             </h3>
             
             {filteredFrames.length === 0 ? (
-              <div className="text-center py-12">
+              <div className="text-center py-8">
                 <p className="text-gray-600 text-lg">Tidak ada frame di kategori ini</p>
               </div>
             ) : (
-              <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-3 overflow-y-auto flex-1 pr-2">
                 {filteredFrames.map((frame) => (
                   <motion.div
                     key={frame.id}
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
+                    whileHover={{ scale: 1.03 }}
+                    whileTap={{ scale: 0.97 }}
                     onClick={() => handleFrameClick(frame)}
                     data-testid={`frame-option-${frame.id}`}
-                    className={`cursor-pointer relative aspect-[3/8] rounded-2xl overflow-hidden border-4 transition-all shadow-lg hover:shadow-xl ${
+                    className={`cursor-pointer relative aspect-[2/3] rounded-xl overflow-hidden border-3 transition-all shadow-lg hover:shadow-xl ${
                       selectedFrame?.id === frame.id
                         ? 'border-pink-500 ring-4 ring-pink-300'
                         : 'border-white/50 hover:border-white'
@@ -114,7 +114,7 @@ const FrameSelect = () => {
                       alt={frame.name}
                       className="w-full h-full object-cover"
                       onError={(e) => {
-                        e.target.src = 'https://via.placeholder.com/300x800/FFD1DC/FF69B4?text=Frame';
+                        e.target.src = 'https://via.placeholder.com/300x450/FFD1DC/FF69B4?text=Frame';
                       }}
                     />
                     
@@ -127,17 +127,17 @@ const FrameSelect = () => {
                       <motion.div
                         initial={{ scale: 0 }}
                         animate={{ scale: 1 }}
-                        className="absolute top-2 right-2 bg-pink-500 text-white rounded-full p-2 shadow-lg"
+                        className="absolute top-2 right-2 bg-pink-500 text-white rounded-full p-1.5 shadow-lg"
                       >
-                        <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
+                        <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
                           <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                         </svg>
                       </motion.div>
                     )}
                     
-                    <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent p-3">
-                      <p className="text-white font-bold text-sm text-center">{frame.name}</p>
-                      <p className="text-white/80 text-xs text-center">{frame.slots} Foto</p>
+                    <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent p-2">
+                      <p className="text-white font-bold text-xs text-center">{frame.name}</p>
+                      <p className="text-white/80 text-[10px] text-center">{frame.slots} Foto</p>
                     </div>
                   </motion.div>
                 ))}
@@ -146,18 +146,19 @@ const FrameSelect = () => {
           </GlassCard>
 
           {/* Preview & Action Panel */}
-          <div className="space-y-4">
+          <div className="flex flex-col gap-3 overflow-hidden">
             {selectedFrame ? (
               <motion.div
                 initial={{ opacity: 0, x: 50 }}
                 animate={{ opacity: 1, x: 0 }}
+                className="flex-1 min-h-0"
               >
-                <GlassCard>
-                  <h3 className="text-xl font-bold text-gray-800 mb-3 text-center" style={{ fontFamily: 'Quicksand, sans-serif' }}>
+                <GlassCard className="h-full flex flex-col">
+                  <h3 className="text-lg font-bold text-gray-800 mb-2 text-center flex-shrink-0" style={{ fontFamily: 'Quicksand, sans-serif' }}>
                     Preview
                   </h3>
                   
-                  <div className="aspect-[3/8] rounded-2xl overflow-hidden shadow-xl relative mb-4">
+                  <div className="aspect-[2/3] rounded-xl overflow-hidden shadow-xl relative mb-3 max-h-[40vh]">
                     <img
                       src={selectedFrame.preview}
                       alt={selectedFrame.name}
@@ -169,41 +170,40 @@ const FrameSelect = () => {
                     />
                   </div>
                   
-                  <div className="text-center mb-4">
-                    <p className="text-gray-800 font-bold text-lg">{selectedFrame.name}</p>
-                    <p className="text-gray-600 text-sm">{selectedFrame.category}</p>
-                    <p className="text-pink-600 text-sm font-medium">{selectedFrame.slots} Foto Strip</p>
+                  <div className="text-center mb-3 flex-shrink-0">
+                    <p className="text-gray-800 font-bold">{selectedFrame.name}</p>
+                    <p className="text-gray-600 text-xs">{selectedFrame.category}</p>
+                    <p className="text-pink-600 text-xs font-medium">{selectedFrame.slots} Foto Strip</p>
                   </div>
 
                   <JellyButton
                     onClick={handleContinue}
                     testId="continue-to-capture-btn"
-                    className="w-full text-lg"
+                    className="w-full"
                   >
                     Mulai Sesi Foto ✨
                   </JellyButton>
                 </GlassCard>
               </motion.div>
             ) : (
-              <GlassCard>
-                <div className="text-center py-12">
-                  <p className="text-6xl mb-4">👆</p>
-                  <p className="text-gray-800 font-bold text-lg mb-2">Pilih Frame</p>
-                  <p className="text-gray-600 text-sm">
-                    Pilih salah satu frame di sebelah kiri untuk melanjutkan
+              <GlassCard className="flex-1">
+                <div className="text-center py-8">
+                  <p className="text-4xl mb-3">👆</p>
+                  <p className="text-gray-800 font-bold mb-1">Pilih Frame</p>
+                  <p className="text-gray-600 text-xs">
+                    Pilih salah satu frame di sebelah kiri
                   </p>
                 </div>
               </GlassCard>
             )}
 
             {/* Info Card */}
-            <GlassCard>
-              <h4 className="font-bold text-gray-800 mb-2">ℹ️ Info</h4>
-              <ul className="text-sm text-gray-700 space-y-1">
+            <GlassCard className="flex-shrink-0">
+              <h4 className="font-bold text-gray-800 mb-1 text-sm">ℹ️ Info</h4>
+              <ul className="text-xs text-gray-700 space-y-0.5">
                 <li>✓ {filteredFrames.length} frame tersedia</li>
                 <li>✓ 3 foto per strip</li>
                 <li>✓ AR filters available</li>
-                <li>✓ Custom text & stickers</li>
               </ul>
             </GlassCard>
           </div>

@@ -17,7 +17,7 @@ const Landing = () => {
   };
 
   return (
-    <div className="candy-gradient-bg flex items-center justify-center">
+    <div className="candy-gradient-bg h-screen flex items-center justify-center overflow-hidden">
       <FloatingBubbles />
       
       <div className="relative z-10 text-center px-6">

@@ -56,69 +56,67 @@ const Gallery = () => {
   };
 
   return (
-    <div className="candy-gradient-bg min-h-screen py-8 px-4">
+    <div className="candy-gradient-bg h-screen flex flex-col py-4 px-4 overflow-hidden">
       <FloatingBubbles />
       
-      <div className="relative z-10 max-w-7xl mx-auto">
-        <div className="flex items-center justify-between mb-8">
+      <div className="relative z-10 max-w-7xl mx-auto flex-1 flex flex-col min-h-0">
+        <div className="flex items-center justify-between mb-4 flex-shrink-0">
           <button
             onClick={() => navigate('/')}
-            className="p-3 rounded-full bg-white/40 hover:bg-white/80 transition-all"
+            className="p-2 rounded-full bg-white/40 hover:bg-white/80 transition-all"
             data-testid="back-to-home-btn"
           >
-            <ChevronLeft className="w-6 h-6 text-candy-bright-pink" />
+            <ChevronLeft className="w-5 h-5 text-candy-bright-pink" />
           </button>
           
-          <h2 className="text-3xl md:text-4xl font-bold text-[#592E39] font-['Fredoka']">
+          <h2 className="text-2xl md:text-3xl font-bold text-[#592E39] font-['Fredoka']">
             Gallery Foto 🖼️
           </h2>
           
-          <div className="w-12"></div>
+          <div className="w-10"></div>
         </div>
 
         {loading ? (
-          <GlassCard className="text-center py-20">
-            <div className="animate-spin rounded-full h-16 w-16 border-4 border-candy-bright-pink border-t-transparent mx-auto mb-4"></div>
-            <p className="text-[#592E39] font-medium text-lg">Memuat galeri...</p>
+          <GlassCard className="text-center py-12 flex-1">
+            <div className="animate-spin rounded-full h-12 w-12 border-4 border-candy-bright-pink border-t-transparent mx-auto mb-4"></div>
+            <p className="text-[#592E39] font-medium">Memuat galeri...</p>
           </GlassCard>
         ) : photos.length === 0 ? (
-          <GlassCard className="text-center py-20">
-            <p className="text-[#592E39] font-bold text-2xl mb-4">Belum ada foto 😢</p>
-            <p className="text-[#8B5F6D] mb-6">Ambil foto pertama Anda sekarang!</p>
+          <GlassCard className="text-center py-12 flex-1">
+            <p className="text-[#592E39] font-bold text-xl mb-3">Belum ada foto 😢</p>
+            <p className="text-[#8B5F6D] mb-4 text-sm">Ambil foto pertama Anda sekarang!</p>
             <JellyButton onClick={() => navigate('/')}>Mulai Photobooth</JellyButton>
           </GlassCard>
         ) : (
-          <>
-            <GlassCard className="mb-6">
-              <div className="flex items-center justify-between mb-4">
-                <p className="text-[#592E39] font-bold text-lg">
-                  Total: {photos.length} foto
-                </p>
-              </div>
-              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                {photos.map((photo) => (
-                  <motion.div
-                    key={photo.id}
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                    onClick={() => setSelectedPhoto(photo)}
-                    className="cursor-pointer relative aspect-[3/8] rounded-2xl overflow-hidden border-2 border-white/40 hover:border-candy-bright-pink transition-all"
-                    data-testid={`gallery-photo-${photo.id}`}
-                  >
-                    <img
-                      src={photo.photo_data}
-                      alt={photo.frame_name}
-                      className="w-full h-full object-cover"
-                    />
-                    <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent p-2">
-                      <p className="text-white text-xs font-bold truncate">{photo.frame_name}</p>
-                      <p className="text-white/80 text-[10px]">{photo.frame_category}</p>
-                    </div>
-                  </motion.div>
-                ))}
-              </div>
-            </GlassCard>
-          </>
+          <GlassCard className="flex-1 flex flex-col min-h-0 overflow-hidden">
+            <div className="flex items-center justify-between mb-3 flex-shrink-0">
+              <p className="text-[#592E39] font-bold">
+                Total: {photos.length} foto
+              </p>
+            </div>
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 overflow-y-auto flex-1 pr-1">
+              {photos.map((photo) => (
+                <motion.div
+                  key={photo.id}
+                  whileHover={{ scale: 1.03 }}
+                  whileTap={{ scale: 0.97 }}
+                  onClick={() => setSelectedPhoto(photo)}
+                  className="cursor-pointer relative aspect-[2/3] rounded-xl overflow-hidden border-2 border-white/40 hover:border-candy-bright-pink transition-all"
+                  data-testid={`gallery-photo-${photo.id}`}
+                >
+                  <img
+                    src={photo.photo_data}
+                    alt={photo.frame_name}
+                    className="w-full h-full object-cover"
+                  />
+                  <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent p-2">
+                    <p className="text-white text-xs font-bold truncate">{photo.frame_name}</p>
+                    <p className="text-white/80 text-[10px]">{photo.frame_category}</p>
+                  </div>
+                </motion.div>
+              ))}
+            </div>
+          </GlassCard>
         )}
       </div>
 
@@ -136,36 +134,36 @@ const Gallery = () => {
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.8, opacity: 0 }}
               onClick={(e) => e.stopPropagation()}
-              className="max-w-2xl w-full"
+              className="max-w-md w-full max-h-[90vh] overflow-hidden"
             >
-              <GlassCard>
-                <div className="aspect-[3/8] rounded-2xl overflow-hidden mb-4">
+              <GlassCard className="flex flex-col max-h-full">
+                <div className="aspect-[2/3] rounded-xl overflow-hidden mb-3 max-h-[50vh]">
                   <img
                     src={selectedPhoto.photo_data}
                     alt={selectedPhoto.frame_name}
-                    className="w-full h-full object-cover"
+                    className="w-full h-full object-contain"
                   />
                 </div>
-                <div className="text-center mb-4">
-                  <p className="text-[#592E39] font-bold text-xl">{selectedPhoto.frame_name}</p>
-                  <p className="text-[#8B5F6D] text-sm">{selectedPhoto.frame_category}</p>
-                  <p className="text-[#8B5F6D] text-xs mt-1">
+                <div className="text-center mb-3 flex-shrink-0">
+                  <p className="text-[#592E39] font-bold">{selectedPhoto.frame_name}</p>
+                  <p className="text-[#8B5F6D] text-xs">{selectedPhoto.frame_category}</p>
+                  <p className="text-[#8B5F6D] text-[10px] mt-0.5">
                     {new Date(selectedPhoto.timestamp).toLocaleDateString('id-ID', {
                       day: 'numeric',
-                      month: 'long',
+                      month: 'short',
                       year: 'numeric',
                       hour: '2-digit',
                       minute: '2-digit'
                     })}
                   </p>
                 </div>
-                <div className="grid grid-cols-3 gap-3">
+                <div className="grid grid-cols-3 gap-2 flex-shrink-0">
                   <JellyButton
                     variant="secondary"
                     onClick={() => handleDownload(selectedPhoto)}
-                    className="inline-flex items-center justify-center gap-2"
+                    className="text-xs inline-flex items-center justify-center gap-1"
                   >
-                    <Download className="w-4 h-4" />
+                    <Download className="w-3 h-3" />
                     Download
                   </JellyButton>
                   <JellyButton
@@ -177,17 +175,17 @@ const Gallery = () => {
                         url: selectedPhoto.photo_data
                       }).catch(() => toast.error('Share tidak didukung'));
                     }}
-                    className="inline-flex items-center justify-center gap-2"
+                    className="text-xs inline-flex items-center justify-center gap-1"
                   >
-                    <Share2 className="w-4 h-4" />
+                    <Share2 className="w-3 h-3" />
                     Share
                   </JellyButton>
                   <JellyButton
                     variant="secondary"
                     onClick={() => handleDelete(selectedPhoto.id)}
-                    className="inline-flex items-center justify-center gap-2 bg-red-100 hover:bg-red-200 text-red-600"
+                    className="text-xs inline-flex items-center justify-center gap-1 bg-red-100 hover:bg-red-200 text-red-600"
                   >
-                    <Trash2 className="w-4 h-4" />
+                    <Trash2 className="w-3 h-3" />
                     Hapus
                   </JellyButton>
                 </div>
