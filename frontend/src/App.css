@@ -1,34 +1,82 @@
-.App-logo {
-    height: 40vmin;
-    pointer-events: none;
+.App {
+  min-height: 100vh;
+  width: 100%;
+  position: relative;
 }
 
-@media (prefers-reduced-motion: no-preference) {
-    .App-logo {
-        animation: App-logo-spin infinite 20s linear;
-    }
+.candy-gradient-bg {
+  background: linear-gradient(135deg, #FFD1DC 0%, #E6E6FA 50%, #B0E0E6 100%);
+  min-height: 100vh;
+  width: 100%;
+  position: relative;
+  overflow: hidden;
 }
 
-.App-header {
-    background-color: #0f0f10;
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    font-size: calc(10px + 2vmin);
-    color: white;
+.bubble {
+  position: absolute;
+  border-radius: 50%;
+  background: radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.8), rgba(255, 255, 255, 0.1));
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  opacity: 0.6;
+  pointer-events: none;
 }
 
-.App-link {
-    color: #61dafb;
+.logo-3d {
+  font-family: 'Fredoka', cursive;
+  text-shadow: 
+    3px 3px 0 #FF69B4,
+    6px 6px 0 #FF1493,
+    9px 9px 20px rgba(255, 20, 147, 0.4);
+  letter-spacing: 2px;
 }
 
-@keyframes App-logo-spin {
-    from {
-        transform: rotate(0deg);
-    }
-    to {
-        transform: rotate(360deg);
-    }
+.webcam-mirror {
+  transform: scaleX(-1);
+}
+
+.countdown-number {
+  font-family: 'Fredoka', cursive;
+  animation: pop 0.5s ease-out;
+}
+
+.flash-effect {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: white;
+  z-index: 9999;
+  pointer-events: none;
+  animation: flash 0.3s ease-out;
+}
+
+@keyframes flash {
+  0% { opacity: 0; }
+  50% { opacity: 0.9; }
+  100% { opacity: 0; }
+}
+
+.polaroid-frame {
+  background: white;
+  padding: 16px;
+  padding-bottom: 48px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+  transform: rotate(-2deg);
+}
+
+.frame-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 10;
+}
+
+.selected-frame {
+  border-color: white;
+  box-shadow: 0 0 0 4px #FF69B4;
+  transform: scale(1.05);
 }

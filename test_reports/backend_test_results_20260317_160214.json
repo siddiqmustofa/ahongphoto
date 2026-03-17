@@ -1,0 +1,151 @@
+{
+  "timestamp": "20260317_160214",
+  "summary": {
+    "total_tests": 7,
+    "passed_tests": 7,
+    "failed_tests": 0,
+    "success_rate": 100.0
+  },
+  "detailed_results": [
+    {
+      "test": "Root API Endpoint",
+      "endpoint": "",
+      "method": "GET",
+      "expected_status": 200,
+      "actual_status": 200,
+      "success": true,
+      "response_data": {
+        "message": "GlowBox Photobooth API"
+      },
+      "error": null
+    },
+    {
+      "test": "Create Status Check",
+      "endpoint": "status",
+      "method": "POST",
+      "expected_status": 200,
+      "actual_status": 200,
+      "success": true,
+      "response_data": {
+        "id": "0f242aa1-00b7-4b48-9ac8-952df69cee8d",
+        "client_name": "test_client_160213",
+        "timestamp": "2026-03-17T16:02:13.860191Z"
+      },
+      "error": null
+    },
+    {
+      "test": "Get Status Checks",
+      "endpoint": "status",
+      "method": "GET",
+      "expected_status": 200,
+      "actual_status": 200,
+      "success": true,
+      "response_data": [
+        {
+          "id": "8572370d-6bbc-49cf-95b0-4be6ad2b4e0f",
+          "client_name": "test_client_160200",
+          "timestamp": "2026-03-17T16:02:00.792228Z"
+        },
+        {
+          "id": "0f242aa1-00b7-4b48-9ac8-952df69cee8d",
+          "client_name": "test_client_160213",
+          "timestamp": "2026-03-17T16:02:13.860191Z"
+        }
+      ],
+      "error": null
+    },
+    {
+      "test": "Send Photo Email",
+      "endpoint": "send-photo",
+      "method": "POST",
+      "expected_status": 200,
+      "actual_status": 200,
+      "success": true,
+      "response_data": {
+        "success": true,
+        "message": "Photo would be sent to test@example.com",
+        "note": "Email sending is mocked for MVP. Integrate with SendGrid/Resend for production."
+      },
+      "error": null
+    },
+    {
+      "test": "Print Photo",
+      "endpoint": "print-photo",
+      "method": "POST",
+      "expected_status": 200,
+      "actual_status": 200,
+      "success": true,
+      "response_data": {
+        "success": true,
+        "message": "Print job sent to printer queue",
+        "jobId": "f80ac1b3-e1dc-41d6-ae44-27770dc8730b",
+        "note": "This is a mock implementation. In production, integrate with CUPS, Windows Print Spooler, or thermal printer SDK (e.g., DNP, Mitsubishi CP-D70)."
+      },
+      "error": null
+    },
+    {
+      "test": "Get Photo Records",
+      "endpoint": "photos",
+      "method": "GET",
+      "expected_status": 200,
+      "actual_status": 200,
+      "success": true,
+      "response_data": [
+        {
+          "id": "2a7e70c8-472e-467b-8e53-915115a2b867",
+          "email": "test@example.com",
+          "frame_name": "Test Frame",
+          "timestamp": "2026-03-17T16:02:01.302218Z"
+        },
+        {
+          "id": "8f7baee7-2735-4a3a-b93b-cfc87f586ce2",
+          "email": "test@example.com",
+          "frame_name": "Test Frame",
+          "timestamp": "2026-03-17T16:02:14.398645Z"
+        }
+      ],
+      "error": null
+    },
+    {
+      "test": "Get Print Jobs",
+      "endpoint": "print-jobs",
+      "method": "GET",
+      "expected_status": 200,
+      "actual_status": 200,
+      "success": true,
+      "response_data": [
+        {
+          "id": "fdb46824-6333-4653-b7b3-f649fe79ca78",
+          "frame_name": "Test Frame",
+          "layout": {
+            "spacing": 20,
+            "photoHeight": 240
+          },
+          "timestamp": "2026-03-17T16:02:01.640252+00:00",
+          "status": "queued"
+        },
+        {
+          "id": "9a69d73b-53a8-4e7a-a68a-4004fdf329fd",
+          "frame_name": "Anime Pastel",
+          "layout": {
+            "spacing": 20,
+            "photoHeight": 240
+          },
+          "timestamp": "2026-03-17T16:02:06.590568+00:00",
+          "status": "queued"
+        },
+        {
+          "id": "f80ac1b3-e1dc-41d6-ae44-27770dc8730b",
+          "frame_name": "Test Frame",
+          "layout": {
+            "spacing": 20,
+            "photoHeight": 240
+          },
+          "timestamp": "2026-03-17T16:02:14.533248+00:00",
+          "status": "queued"
+        }
+      ],
+      "error": null
+    }
+  ]
+}
