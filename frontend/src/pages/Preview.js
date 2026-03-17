@@ -52,14 +52,30 @@ const Preview = () => {
     toast.success('Foto strip berhasil diunduh!');
   };
 
-  const handleShowQR = () => {
+  const handleShowQR = async () => {
     if (!photo) {
       toast.error('Foto tidak tersedia');
       return;
     }
-    setQrValue(photo);
-    setShowQR(true);
-    toast.success('Scan QR code untuk download!');
+    
+    try {
+      toast.info('Generating shareable link...');
+      
+      const response = await axios.post(`${API}/share/create`, {
+        photo_data: photo,
+        frame_name: frame.name
+      });
+      
+      if (response.data.success) {
+        setQrValue(response.data.share_url);
+        setShowQR(true);
+        toast.success('QR Code ready! Scan untuk download');
+      }
+    } catch (error) {
+      console.error('Error creating share link:', error);
+      toast.error('Gagal membuat QR code');
+    }
+  };
   };
 
   const handleEmailSend = async () => {

@@ -8,7 +8,7 @@ from pathlib import Path
 from pydantic import BaseModel, Field, ConfigDict, EmailStr
 from typing import List, Optional
 import uuid
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 import base64
 import asyncio
 
@@ -306,6 +306,53 @@ async def customize_photo(request: CustomizeRequest):
     except Exception as e:
         logger.error(f"Error customizing photo: {str(e)}")
         raise HTTPException(status_code=500, detail="Failed to customize photo")
+
+
+@api_router.post("/share/create")
+async def create_share_link(photo: dict):
+    try:
+        share_id = str(uuid.uuid4())[:8]
+        
+        share_record = {
+            "id": share_id,
+            "photo_data": photo.get("photo_data"),
+            "frame_name": photo.get("frame_name", "GlowBox Photo"),
+            "created_at": datetime.now(timezone.utc).isoformat(),
+            "expires_at": (datetime.now(timezone.utc) + timedelta(days=7)).isoformat()
+        }
+        
+        await db.shared_photos.insert_one(share_record)
+        
+        share_url = f"{os.environ.get('APP_URL', 'https://sweet-snap-box.preview.emergentagent.com')}/share/{share_id}"
+        
+        logger.info(f"Share link created: {share_id}")
+        
+        return {
+            "success": True,
+            "share_id": share_id,
+            "share_url": share_url
+        }
+    except Exception as e:
+        logger.error(f"Error creating share link: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to create share link")
+
+@api_router.get("/share/{share_id}")
+async def get_shared_photo(share_id: str):
+    try:
+        photo = await db.shared_photos.find_one({"id": share_id}, {"_id": 0})
+        
+        if not photo:
+            raise HTTPException(status_code=404, detail="Photo not found")
+        
+        return {
+            "success": True,
+            "photo": photo
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error fetching shared photo: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to fetch photo")
 
 
 app.include_router(api_router)

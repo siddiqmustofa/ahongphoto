@@ -9,6 +9,7 @@ import Preview from "./pages/Preview";
 import Gallery from "./pages/Gallery";
 import Customize from "./pages/Customize";
 import AdminDashboard from "./pages/AdminDashboard";
+import SharedPhoto from "./pages/SharedPhoto";
 
 function App() {
   return (
@@ -23,6 +24,7 @@ function App() {
           <Route path="/preview" element={<Preview />} />
           <Route path="/gallery" element={<Gallery />} />
           <Route path="/admin" element={<AdminDashboard />} />
+          <Route path="/share/:shareId" element={<SharedPhoto />} />
         </Routes>
       </BrowserRouter>
       <Toaster 
