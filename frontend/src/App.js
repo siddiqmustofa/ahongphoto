@@ -8,6 +8,7 @@ import Filter from "./pages/Filter";
 import Preview from "./pages/Preview";
 import Gallery from "./pages/Gallery";
 import Customize from "./pages/Customize";
+import AdminDashboard from "./pages/AdminDashboard";
 
 function App() {
   return (
@@ -21,6 +22,7 @@ function App() {
           <Route path="/customize" element={<Customize />} />
           <Route path="/preview" element={<Preview />} />
           <Route path="/gallery" element={<Gallery />} />
+          <Route path="/admin" element={<AdminDashboard />} />
         </Routes>
       </BrowserRouter>
       <Toaster 

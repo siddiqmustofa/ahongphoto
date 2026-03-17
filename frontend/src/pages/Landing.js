@@ -2,9 +2,19 @@ import { motion } from 'framer-motion';
 import FloatingBubbles from '../components/FloatingBubbles';
 import JellyButton from '../components/JellyButton';
 import { useNavigate } from 'react-router-dom';
+import { useState } from 'react';
 
 const Landing = () => {
   const navigate = useNavigate();
+  const [adminClicks, setAdminClicks] = useState(0);
+
+  const handleLogoClick = () => {
+    setAdminClicks(prev => prev + 1);
+    if (adminClicks + 1 >= 5) {
+      navigate('/admin');
+      setAdminClicks(0);
+    }
+  };
 
   return (
     <div className="candy-gradient-bg flex items-center justify-center">
@@ -16,9 +26,16 @@ const Landing = () => {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, ease: 'easeOut' }}
         >
-          <h1 className="logo-3d text-7xl md:text-9xl font-extrabold text-candy-bright-pink mb-6">
+          <h1 
+            className="logo-3d text-7xl md:text-9xl font-extrabold text-candy-bright-pink mb-2 cursor-pointer select-none"
+            onClick={handleLogoClick}
+            title="Click 5x untuk admin"
+          >
             GlowBox
           </h1>
+          <p className="text-xl md:text-2xl font-bold text-[#FF69B4] mb-4" style={{ fontFamily: 'Fredoka, cursive' }}>
+            By Glad2Glow
+          </p>
           <p className="text-2xl md:text-3xl font-bold text-[#592E39] mb-4 font-['Quicksand']">
             Self Photobooth ✨
           </p>

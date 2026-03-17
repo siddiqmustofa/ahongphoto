@@ -5,6 +5,7 @@ import FloatingBubbles from '../components/FloatingBubbles';
 import GlassCard from '../components/GlassCard';
 import JellyButton from '../components/JellyButton';
 import { ChevronLeft } from 'lucide-react';
+import { toast } from 'sonner';
 
 const filters = [
   { id: 'none', name: 'Original', filter: 'none' },
@@ -23,116 +24,197 @@ const Filter = () => {
   const [processedImage, setProcessedImage] = useState(null);
   const [isProcessing, setIsProcessing] = useState(false);
   
-  const photos = location.state?.photos;
+  const photos = location.state?.photos || [];
   const frame = location.state?.frame;
 
   useEffect(() => {
-    if (!photos || !frame) {
-      navigate('/frame-select');
+    if (!photos || photos.length === 0 || !frame) {
+      console.error('Missing photos or frame');
+      toast.error('Data tidak lengkap. Kembali ke awal.');
+      setTimeout(() => navigate('/frame-select'), 2000);
       return;
     }
-    console.log('Filter page loaded with photos:', photos.length);
+    console.log('Filter page: Got', photos.length, 'photos');
   }, [photos, frame, navigate]);
 
   useEffect(() => {
-    if (photos && frame && photos.length > 0) {
+    if (photos && photos.length > 0 && frame) {
+      console.log('Applying filter:', selectedFilter.name);
       applyFilterAndFrame();
     }
-  }, [selectedFilter, photos, frame]);
+  }, [selectedFilter]);
+
+  useEffect(() => {
+    if (photos && photos.length > 0 && frame && !processedImage) {
+      console.log('Initial render');
+      applyFilterAndFrame();
+    }
+  }, [photos, frame]);
 
   const applyFilterAndFrame = async () => {
-    if (isProcessing) return;
+    if (isProcessing) {
+      console.log('Already processing, skipping...');
+      return;
+    }
     
     const canvas = canvasRef.current;
-    if (!canvas || !photos || photos.length === 0) {
-      console.error('Canvas or photos not available');
+    if (!canvas) {
+      console.error('Canvas not found');
+      return;
+    }
+
+    if (!photos || photos.length === 0) {
+      console.error('No photos to process');
       return;
     }
 
     setIsProcessing(true);
-    console.log('Processing', photos.length, 'photos with filter:', selectedFilter.name);
+    console.log('Starting to process', photos.length, 'photos...');
 
     try {
       const ctx = canvas.getContext('2d');
-      canvas.width = 300;
-      canvas.height = 800;
+      const stripWidth = 300;
+      const stripHeight = 800;
+      
+      canvas.width = stripWidth;
+      canvas.height = stripHeight;
 
+      // Fill background
       ctx.fillStyle = '#FFD1DC';
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      ctx.fillRect(0, 0, stripWidth, stripHeight);
 
       const spacing = 20;
-      const totalSpacing = spacing * (photos.length + 1);
-      const photoHeight = (canvas.height - totalSpacing) / photos.length;
+      const availableHeight = stripHeight - (spacing * (photos.length + 1));
+      const photoHeight = Math.floor(availableHeight / photos.length);
       
-      const imagePromises = photos.map((photo) => {
+      console.log('Strip dimensions:', stripWidth, 'x', stripHeight);
+      console.log('Each photo height:', photoHeight);
+
+      // Load all images
+      const loadImage = (src) => {
         return new Promise((resolve, reject) => {
           const img = new Image();
           img.crossOrigin = 'anonymous';
-          img.onload = () => resolve(img);
+          img.onload = () => {
+            console.log('Image loaded successfully');
+            resolve(img);
+          };
           img.onerror = (err) => {
             console.error('Image load error:', err);
             reject(err);
           };
-          img.src = photo;
+          img.src = src;
         });
+      };
+
+      const imagePromises = photos.map((photo, idx) => {
+        console.log(`Loading photo ${idx + 1}...`);
+        return loadImage(photo);
       });
 
       const images = await Promise.all(imagePromises);
-      console.log('All images loaded successfully');
+      console.log('All images loaded!');
       
+      // Draw each photo
       images.forEach((img, index) => {
-        const yPos = spacing + index * (photoHeight + spacing);
+        const yPos = spacing + (index * (photoHeight + spacing));
+        
+        console.log(`Drawing photo ${index + 1} at Y:${yPos}`);
         
         ctx.save();
         ctx.filter = selectedFilter.filter;
-        ctx.drawImage(img, 0, yPos, canvas.width, photoHeight);
+        
+        // Calculate scaling to cover the area
+        const scale = Math.max(stripWidth / img.width, photoHeight / img.height);
+        const scaledWidth = img.width * scale;
+        const scaledHeight = img.height * scale;
+        const xOffset = (stripWidth - scaledWidth) / 2;
+        const yOffset = (photoHeight - scaledHeight) / 2;
+        
+        ctx.drawImage(
+          img, 
+          xOffset, 
+          yPos + yOffset, 
+          scaledWidth, 
+          scaledHeight
+        );
+        
         ctx.restore();
       });
 
+      console.log('All photos drawn');
+
+      // Apply frame overlay
       ctx.filter = 'none';
       
-      if (frame.svg) {
-        const svgImg = new Image();
+      if (frame && frame.svg) {
+        console.log('Applying frame overlay...');
+        
         const svgBlob = new Blob([frame.svg], { type: 'image/svg+xml;charset=utf-8' });
         const svgUrl = URL.createObjectURL(svgBlob);
         
-        svgImg.onload = () => {
-          ctx.drawImage(svgImg, 0, 0, canvas.width, canvas.height);
-          const finalImage = canvas.toDataURL('image/jpeg', 0.9);
-          setProcessedImage(finalImage);
-          URL.revokeObjectURL(svgUrl);
-          setIsProcessing(false);
-          console.log('Image processed successfully');
-        };
+        const svgImg = new Image();
         
-        svgImg.onerror = (err) => {
-          console.error('SVG load error:', err);
-          const finalImage = canvas.toDataURL('image/jpeg', 0.9);
-          setProcessedImage(finalImage);
-          URL.revokeObjectURL(svgUrl);
-          setIsProcessing(false);
-        };
+        const svgLoadPromise = new Promise((resolve, reject) => {
+          svgImg.onload = () => {
+            console.log('Frame SVG loaded');
+            ctx.drawImage(svgImg, 0, 0, stripWidth, stripHeight);
+            URL.revokeObjectURL(svgUrl);
+            resolve();
+          };
+          
+          svgImg.onerror = (err) => {
+            console.error('SVG load error:', err);
+            URL.revokeObjectURL(svgUrl);
+            reject(err);
+          };
+          
+          svgImg.src = svgUrl;
+        });
         
-        svgImg.src = svgUrl;
-      } else {
-        const finalImage = canvas.toDataURL('image/jpeg', 0.9);
-        setProcessedImage(finalImage);
-        setIsProcessing(false);
-        console.log('Image processed (no frame SVG)');
+        await svgLoadPromise;
       }
+
+      // Convert to data URL
+      const finalImage = canvas.toDataURL('image/jpeg', 0.95);
+      console.log('Final image created, length:', finalImage.length);
+      
+      setProcessedImage(finalImage);
+      setIsProcessing(false);
+      toast.success('Strip foto berhasil dibuat!');
+      
     } catch (error) {
       console.error('Error processing images:', error);
       setIsProcessing(false);
+      toast.error('Gagal memproses foto. Coba lagi.');
     }
   };
 
   const handleContinue = () => {
-    if (processedImage) {
-      navigate('/preview', { state: { photo: processedImage, frame, photos } });
+    if (!processedImage) {
+      toast.error('Tunggu proses selesai...');
+      return;
     }
+    console.log('Navigating to preview with processed image');
+    navigate('/preview', { 
+      state: { 
+        photo: processedImage, 
+        frame,
+        photos 
+      } 
+    });
   };
 
-  if (!photos || !frame) return null;
+  if (!photos || photos.length === 0 || !frame) {
+    return (
+      <div className="candy-gradient-bg min-h-screen flex items-center justify-center">
+        <GlassCard className="text-center p-8">
+          <div className="animate-spin rounded-full h-12 w-12 border-4 border-candy-bright-pink border-t-transparent mx-auto mb-4"></div>
+          <p className="text-[#592E39] font-medium">Memuat...</p>
+        </GlassCard>
+      </div>
+    );
+  }
 
   return (
     <div className="candy-gradient-bg min-h-screen py-8 px-4">
@@ -160,23 +242,29 @@ const Filter = () => {
             <h3 className="text-lg font-bold text-[#592E39] mb-3 font-['Quicksand'] text-center">
               Preview Strip
             </h3>
-            <div className="aspect-[3/8] rounded-2xl overflow-hidden bg-black/5 relative">
+            <div className="aspect-[3/8] rounded-2xl overflow-hidden bg-gradient-to-b from-candy-soft-pink to-candy-lavender relative">
               <canvas ref={canvasRef} className="hidden" />
+              
               {isProcessing && (
-                <div className="absolute inset-0 flex items-center justify-center bg-white/20">
+                <div className="absolute inset-0 flex items-center justify-center bg-white/20 backdrop-blur-sm z-10">
                   <div className="text-center">
                     <div className="animate-spin rounded-full h-12 w-12 border-4 border-candy-bright-pink border-t-transparent mx-auto mb-4"></div>
-                    <p className="text-[#592E39] font-medium">Memproses...</p>
+                    <p className="text-[#592E39] font-medium">Memproses strip...</p>
                   </div>
                 </div>
               )}
-              {processedImage && !isProcessing && (
+              
+              {processedImage && !isProcessing ? (
                 <img
                   src={processedImage}
-                  alt="Preview"
+                  alt="Preview Strip"
                   className="w-full h-full object-cover"
                   data-testid="filtered-preview"
                 />
+              ) : !isProcessing && (
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <p className="text-[#8B5F6D] font-medium">Generating preview...</p>
+                </div>
               )}
             </div>
           </GlassCard>
@@ -209,12 +297,17 @@ const Filter = () => {
 
             <GlassCard className="mb-6">
               <h3 className="text-lg font-bold text-[#592E39] mb-3 font-['Quicksand']">
-                Foto yang Diambil
+                Foto yang Diambil ({photos.length})
               </h3>
               <div className="grid grid-cols-3 gap-2">
                 {photos.map((photo, idx) => (
                   <div key={idx} className="aspect-square rounded-lg overflow-hidden border-2 border-candy-bright-pink/30">
-                    <img src={photo} alt={`Foto ${idx + 1}`} className="w-full h-full object-cover" />
+                    <img 
+                      src={photo} 
+                      alt={`Foto ${idx + 1}`} 
+                      className="w-full h-full object-cover" 
+                      style={{ transform: 'scaleX(-1)' }}
+                    />
                   </div>
                 ))}
               </div>
@@ -227,7 +320,7 @@ const Filter = () => {
                 testId="continue-to-preview-btn"
                 className="w-full"
               >
-                Lanjut ke Preview →
+                {isProcessing ? 'Memproses...' : 'Lanjut ke Preview →'}
               </JellyButton>
             </div>
           </div>
