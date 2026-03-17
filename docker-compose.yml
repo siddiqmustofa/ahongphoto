@@ -1,0 +1,54 @@
+version: '3.8'
+
+services:
+  mongodb:
+    image: mongo:7
+    container_name: glowbox-mongo
+    restart: always
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb_data:/data/db
+    environment:
+      - MONGO_INITDB_DATABASE=glowbox_db
+
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile.backend
+    container_name: glowbox-backend
+    restart: always
+    ports:
+      - "8001:8001"
+    environment:
+      - MONGO_URL=mongodb://mongodb:27017
+      - DB_NAME=glowbox_db
+      - CORS_ORIGINS=http://localhost:3000,http://localhost
+      - RESEND_API_KEY=${RESEND_API_KEY:-re_demo_key}
+      - SENDER_EMAIL=${SENDER_EMAIL:-noreply@glowbox.app}
+      - APP_URL=${APP_URL:-http://localhost}
+    depends_on:
+      - mongodb
+    volumes:
+      - ./backend:/app
+
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile.frontend
+    container_name: glowbox-frontend
+    restart: always
+    ports:
+      - "80:80"
+    environment:
+      - REACT_APP_BACKEND_URL=http://localhost:8001
+    depends_on:
+      - backend
+
+volumes:
+  mongodb_data:
+    driver: local
+
+networks:
+  default:
+    name: glowbox-network
