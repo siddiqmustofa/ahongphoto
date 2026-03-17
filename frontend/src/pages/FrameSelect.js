@@ -50,6 +50,7 @@ const FrameSelect = () => {
           <h2 className="text-2xl md:text-4xl font-bold text-gray-800" style={{ fontFamily: 'Fredoka, cursive' }}>
             Pilih Frame Strip 🎀
           </h2>
+          <p className="text-sm text-gray-600 mt-1">Ukuran 4R (10.2 x 15.2 cm)</p>
           
           <div className="w-12" />
         </div>

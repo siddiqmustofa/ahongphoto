@@ -6,6 +6,7 @@ import GlassCard from '../components/GlassCard';
 import JellyButton from '../components/JellyButton';
 import { ChevronLeft } from 'lucide-react';
 import { toast } from 'sonner';
+import { PAPER_4R } from '../data/frames';
 
 const filters = [
   { id: 'none', name: 'Original', filter: 'none' },
@@ -28,7 +29,7 @@ const Filter = () => {
   const frame = location.state?.frame;
 
   useEffect(() => {
-    console.log('FILTER PAGE: Photos:', photos.length, 'Frame:', frame?.name);
+    console.log('FILTER: Photos:', photos.length, 'Frame:', frame?.name);
     
     if (!photos || photos.length === 0 || !frame) {
       console.error('Missing data');
@@ -53,18 +54,20 @@ const Filter = () => {
     if (!canvas) return;
 
     setIsProcessing(true);
-    console.log('Processing', photos.length, 'photos...');
+    console.log('Processing with 4R layout...');
 
     try {
       const ctx = canvas.getContext('2d');
-      canvas.width = 300;
-      canvas.height = 800;
-
-      ctx.fillStyle = '#FFD1DC';
-      ctx.fillRect(0, 0, 300, 800);
-
-      const photoHeight = Math.floor((800 - 80) / 3);
       
+      // 4R Paper Size
+      canvas.width = PAPER_4R.width;
+      canvas.height = PAPER_4R.height;
+
+      // Background
+      ctx.fillStyle = '#FFD1DC';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      // Load photos
       const imagePromises = photos.map((photoData) => {
         return new Promise((resolve, reject) => {
           const img = new Image();
@@ -78,19 +81,37 @@ const Filter = () => {
       const images = await Promise.all(imagePromises);
       console.log('Images loaded:', images.length);
       
+      // Auto-place photos using frame layout
+      const photoLayout = frame.photoLayout || [];
+      
       images.forEach((img, index) => {
-        const yPos = 20 + (index * (photoHeight + 20));
-        ctx.save();
-        ctx.filter = selectedFilter.filter;
-        const scale = Math.max(300 / img.width, photoHeight / img.height);
-        const sw = img.width * scale;
-        const sh = img.height * scale;
-        const x = (300 - sw) / 2;
-        const y = (photoHeight - sh) / 2;
-        ctx.drawImage(img, x, yPos + y, sw, sh);
-        ctx.restore();
+        if (index < photoLayout.length) {
+          const layout = photoLayout[index];
+          
+          ctx.save();
+          ctx.filter = selectedFilter.filter;
+          
+          // Scale to cover the layout area
+          const scale = Math.max(layout.width / img.width, layout.height / img.height);
+          const scaledWidth = img.width * scale;
+          const scaledHeight = img.height * scale;
+          const xOffset = (layout.width - scaledWidth) / 2;
+          const yOffset = (layout.height - scaledHeight) / 2;
+          
+          ctx.drawImage(
+            img, 
+            layout.x + xOffset, 
+            layout.y + yOffset, 
+            scaledWidth, 
+            scaledHeight
+          );
+          
+          ctx.restore();
+          console.log(`Photo ${index + 1} placed at (${layout.x}, ${layout.y})`);
+        }
       });
 
+      // Apply frame overlay
       ctx.filter = 'none';
       
       if (frame?.svg) {
@@ -100,7 +121,7 @@ const Filter = () => {
         await new Promise((resolve) => {
           const svgImg = new Image();
           svgImg.onload = () => {
-            ctx.drawImage(svgImg, 0, 0, 300, 800);
+            ctx.drawImage(svgImg, 0, 0, canvas.width, canvas.height);
             URL.revokeObjectURL(svgUrl);
             resolve();
           };
@@ -113,11 +134,11 @@ const Filter = () => {
       }
 
       const result = canvas.toDataURL('image/jpeg', 0.95);
-      console.log('Strip created:', result.length, 'bytes');
+      console.log('4R Strip created:', result.length, 'bytes');
       
       setProcessedImage(result);
       setIsProcessing(false);
-      toast.success('Strip foto berhasil!');
+      toast.success('Strip 4R berhasil dibuat!');
       
     } catch (error) {
       console.error('Processing error:', error);
@@ -132,7 +153,7 @@ const Filter = () => {
       return;
     }
     
-    console.log('Navigating to preview with image:', processedImage.length);
+    console.log('Navigating to preview...');
     navigate('/preview', { 
       state: { photo: processedImage, frame, photos },
       replace: false
@@ -143,8 +164,8 @@ const Filter = () => {
     return (
       <div className="candy-gradient-bg min-h-screen flex items-center justify-center">
         <GlassCard className="text-center p-8">
-          <div className="animate-spin rounded-full h-12 w-12 border-4 border-candy-bright-pink border-t-transparent mx-auto mb-4" />
-          <p className="text-gray-700 font-medium">Memuat...</p>
+          <div className="animate-spin rounded-full h-12 w-12 border-4 border-pink-500 border-t-transparent mx-auto mb-4" />
+          <p className="text-gray-700 font-medium">Loading...</p>
         </GlassCard>
       </div>
     );
@@ -154,35 +175,38 @@ const Filter = () => {
     <div className="candy-gradient-bg min-h-screen py-8 px-4">
       <FloatingBubbles />
       
-      <div className="relative z-10 max-w-5xl mx-auto">
+      <div className="relative z-10 max-w-6xl mx-auto">
         <div className="flex items-center justify-between mb-8">
           <button
             onClick={() => navigate('/capture', { state: { frame } })}
-            className="p-3 rounded-full bg-white/40 hover:bg-white/80 transition-all"
+            className="p-3 rounded-full bg-white/40 hover:bg-white/80 transition-all shadow-md"
           >
-            <ChevronLeft className="w-6 h-6 text-candy-bright-pink" />
+            <ChevronLeft className="w-6 h-6 text-pink-600" />
           </button>
           
-          <h2 className="text-2xl md:text-3xl font-bold text-gray-800">
-            Pilih Filter
-          </h2>
+          <div className="text-center">
+            <h2 className="text-2xl md:text-3xl font-bold text-gray-800" style={{ fontFamily: 'Fredoka, cursive' }}>
+              Pilih Filter ✨
+            </h2>
+            <p className="text-sm text-gray-600 mt-1">Ukuran 4R (10.2 x 15.2 cm)</p>
+          </div>
           
           <div className="w-12" />
         </div>
 
-        <div className="grid md:grid-cols-2 gap-6">
+        <div className="grid md:grid-cols-[1fr,2fr] gap-6">
           <GlassCard>
-            <h3 className="text-lg font-bold text-gray-800 mb-3 text-center">
-              Preview Strip
+            <h3 className="text-lg font-bold text-gray-800 mb-3 text-center" style={{ fontFamily: 'Quicksand, sans-serif' }}>
+              Preview Strip 4R
             </h3>
-            <div className="aspect-[3/8] rounded-2xl overflow-hidden bg-gradient-to-b from-pink-200 to-purple-200 relative">
+            <div className="aspect-[2/3] rounded-2xl overflow-hidden bg-gradient-to-b from-pink-200 to-purple-200 relative shadow-xl">
               <canvas ref={canvasRef} className="hidden" />
               
               {isProcessing ? (
                 <div className="absolute inset-0 flex items-center justify-center bg-white/20 backdrop-blur-sm">
                   <div className="text-center">
                     <div className="animate-spin rounded-full h-12 w-12 border-4 border-pink-500 border-t-transparent mx-auto mb-4" />
-                    <p className="text-gray-700 font-medium">Memproses...</p>
+                    <p className="text-gray-700 font-medium">Processing...</p>
                   </div>
                 </div>
               ) : processedImage ? (
@@ -198,11 +222,20 @@ const Filter = () => {
                 </div>
               )}
             </div>
+            
+            <div className="mt-3 text-center">
+              <p className="text-xs text-gray-600">
+                📐 {PAPER_4R.width} x {PAPER_4R.height} px
+              </p>
+              <p className="text-xs text-gray-600">
+                🖨️ Print: {PAPER_4R.printWidth} x {PAPER_4R.printHeight} px @ {PAPER_4R.printDpi} DPI
+              </p>
+            </div>
           </GlassCard>
 
           <div>
             <GlassCard className="mb-6">
-              <h3 className="text-xl font-bold text-gray-800 mb-4">
+              <h3 className="text-xl font-bold text-gray-800 mb-4" style={{ fontFamily: 'Quicksand, sans-serif' }}>
                 Pilih Filter
               </h3>
               <div className="grid grid-cols-3 gap-3">
@@ -213,10 +246,10 @@ const Filter = () => {
                     whileTap={{ scale: 0.95 }}
                     onClick={() => setSelectedFilter(filter)}
                     disabled={isProcessing}
-                    className={`p-4 rounded-2xl transition-all ${
+                    className={`p-4 rounded-2xl transition-all shadow-md ${
                       selectedFilter.id === filter.id
-                        ? 'bg-pink-500 text-white shadow-lg'
-                        : 'bg-white/40 text-gray-800 hover:bg-white/60'
+                        ? 'bg-gradient-to-b from-pink-400 to-pink-600 text-white'
+                        : 'bg-white/60 text-gray-800 hover:bg-white/80'
                     } ${isProcessing ? 'opacity-50' : ''}`}
                   >
                     <div className="text-sm font-bold">{filter.name}</div>
@@ -226,12 +259,12 @@ const Filter = () => {
             </GlassCard>
 
             <GlassCard className="mb-6">
-              <h3 className="text-lg font-bold text-gray-800 mb-3">
-                Foto ({photos.length})
+              <h3 className="text-lg font-bold text-gray-800 mb-3" style={{ fontFamily: 'Quicksand, sans-serif' }}>
+                Foto Terambil ({photos.length})
               </h3>
               <div className="grid grid-cols-3 gap-2">
                 {photos.map((photo, idx) => (
-                  <div key={idx} className="aspect-square rounded-lg overflow-hidden border-2 border-pink-300">
+                  <div key={idx} className="aspect-square rounded-lg overflow-hidden border-2 border-pink-300 shadow-sm">
                     <img 
                       src={photo} 
                       alt={`Foto ${idx + 1}`} 
@@ -247,9 +280,9 @@ const Filter = () => {
               onClick={handleContinue}
               disabled={!processedImage || isProcessing}
               testId="continue-to-preview-btn"
-              className="w-full"
+              className="w-full text-lg"
             >
-              {isProcessing ? 'Memproses...' : 'Lanjut ke Preview'}
+              {isProcessing ? 'Processing...' : 'Lanjut ke Preview →'}
             </JellyButton>
           </div>
         </div>
