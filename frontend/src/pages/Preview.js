@@ -4,9 +4,10 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import FloatingBubbles from '../components/FloatingBubbles';
 import GlassCard from '../components/GlassCard';
 import JellyButton from '../components/JellyButton';
-import { Download, Mail, RotateCcw, Home, Printer } from 'lucide-react';
+import { Download, Mail, RotateCcw, Home, Printer, QrCode } from 'lucide-react';
 import axios from 'axios';
 import { toast } from 'sonner';
+import { QRCodeCanvas } from 'qrcode.react';
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
@@ -17,22 +18,43 @@ const Preview = () => {
   const [email, setEmail] = useState('');
   const [isSending, setIsSending] = useState(false);
   const [isPrinting, setIsPrinting] = useState(false);
+  const [showQR, setShowQR] = useState(false);
+  const [qrValue, setQrValue] = useState('');
   
   const photo = location.state?.photo;
   const frame = location.state?.frame;
+  const photos = location.state?.photos;
 
   useEffect(() => {
     if (!photo || !frame) {
-      navigate('/frame-select');
+      console.error('Missing photo or frame data');
+      toast.error('Data tidak lengkap. Kembali ke awal.');
+      setTimeout(() => navigate('/frame-select'), 2000);
+      return;
     }
+    console.log('Preview loaded with photo length:', photo?.length);
   }, [photo, frame, navigate]);
 
   const handleDownload = () => {
+    if (!photo) {
+      toast.error('Foto tidak tersedia');
+      return;
+    }
     const link = document.createElement('a');
     link.href = photo;
     link.download = `glowbox-strip-${Date.now()}.jpg`;
     link.click();
     toast.success('Foto strip berhasil diunduh!');
+  };
+
+  const handleShowQR = () => {
+    if (!photo) {
+      toast.error('Foto tidak tersedia');
+      return;
+    }
+    setQrValue(photo);
+    setShowQR(true);
+    toast.success('Scan QR code untuk download!');
   };
 
   const handleEmailSend = async () => {
@@ -70,7 +92,7 @@ const Preview = () => {
       const response = await axios.post(`${API}/print-photo`, {
         photo,
         frameName: frame.name,
-        layout: frame.printLayout
+        layout: frame.printLayout || { spacing: 20, photoHeight: 240 }
       });
       
       if (response.data.success) {
@@ -112,7 +134,15 @@ const Preview = () => {
     navigate('/customize', { state: { photo, frame, photos } });
   };
 
-  if (!photo || !frame) return null;
+  if (!photo || !frame) {
+    return (
+      <div className="candy-gradient-bg min-h-screen flex items-center justify-center">
+        <GlassCard className="text-center p-8">
+          <p className="text-[#592E39] font-medium">Memuat...</p>
+        </GlassCard>
+      </div>
+    );
+  }
 
   return (
     <div className="candy-gradient-bg min-h-screen py-8 px-4">
@@ -140,12 +170,22 @@ const Preview = () => {
           >
             <GlassCard>
               <div className="bg-white p-4 rounded-2xl shadow-xl">
-                <img
-                  src={photo}
-                  alt="Final photo strip"
-                  className="w-full rounded-lg"
-                  data-testid="final-photo"
-                />
+                {photo ? (
+                  <img
+                    src={photo}
+                    alt="Final photo strip"
+                    className="w-full rounded-lg"
+                    data-testid="final-photo"
+                    onError={(e) => {
+                      console.error('Image failed to load');
+                      e.target.src = 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="300" height="800"><rect fill="%23FFD1DC" width="300" height="800"/><text x="150" y="400" text-anchor="middle" fill="%23592E39">Image Error</text></svg>';
+                    }}
+                  />
+                ) : (
+                  <div className="aspect-[3/8] bg-gradient-to-b from-candy-soft-pink to-candy-lavender flex items-center justify-center rounded-lg">
+                    <p className="text-[#8B5F6D]">No image</p>
+                  </div>
+                )}
               </div>
               <div className="mt-4 text-center">
                 <p className="text-[#592E39] font-bold text-lg">{frame.name}</p>
@@ -158,7 +198,31 @@ const Preview = () => {
             initial={{ opacity: 0, x: 50 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.5, delay: 0.2 }}
-            className="space-y-4">
+            className="space-y-4"
+          >
+            <GlassCard>
+              <h3 className="text-2xl font-bold text-[#592E39] mb-4 font-['Fredoka']">
+                📱 QR Code Download
+              </h3>
+              <div className="text-center">
+                {showQR && qrValue ? (
+                  <div className="bg-white p-4 rounded-2xl inline-block">
+                    <QRCodeCanvas value={qrValue} size={200} level="H" />
+                    <p className="text-xs text-[#8B5F6D] mt-2">Scan untuk download</p>
+                  </div>
+                ) : (
+                  <JellyButton
+                    onClick={handleShowQR}
+                    testId="show-qr-btn"
+                    className="w-full inline-flex items-center justify-center gap-2"
+                  >
+                    <QrCode className="w-5 h-5" />
+                    Generate QR Code
+                  </JellyButton>
+                )}
+              </div>
+            </GlassCard>
+
             <GlassCard>
               <h3 className="text-2xl font-bold text-[#592E39] mb-4 font-['Fredoka']">
                 🔥 Cetak ke Printer
@@ -179,7 +243,7 @@ const Preview = () => {
 
             <GlassCard>
               <h3 className="text-xl font-bold text-[#592E39] mb-4 font-['Quicksand']">
-                📩 Kirim ke Email
+                📧 Kirim ke Email
               </h3>
               <div className="space-y-3">
                 <input
@@ -209,7 +273,7 @@ const Preview = () => {
 
             <GlassCard>
               <h3 className="text-xl font-bold text-[#592E39] mb-4 font-['Quicksand']">
-                📥 Download Foto
+                💾 Download Foto
               </h3>
               <JellyButton
                 onClick={handleDownload}

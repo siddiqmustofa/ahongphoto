@@ -3,7 +3,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { Toaster } from "sonner";
 import Landing from "./pages/Landing";
 import FrameSelect from "./pages/FrameSelect";
-import Capture from "./pages/Capture";
+import CaptureWithAR from "./pages/CaptureWithAR";
 import Filter from "./pages/Filter";
 import Preview from "./pages/Preview";
 import Gallery from "./pages/Gallery";
@@ -17,7 +17,7 @@ function App() {
         <Routes>
           <Route path="/" element={<Landing />} />
           <Route path="/frame-select" element={<FrameSelect />} />
-          <Route path="/capture" element={<Capture />} />
+          <Route path="/capture" element={<CaptureWithAR />} />
           <Route path="/filter" element={<Filter />} />
           <Route path="/customize" element={<Customize />} />
           <Route path="/preview" element={<Preview />} />
