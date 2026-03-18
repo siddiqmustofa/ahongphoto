@@ -34,4 +34,7 @@ logs/
 
 # OS
 .DS_Store
-Thumbs.db
+Thumbs.db-e 
+# Environment files
+*.env
+*.env.*
