@@ -37,6 +37,17 @@ Buatkan Aplikasi Self Photobooth Bernama GlowBox dengan desain / tema UI dengan 
 
 ## What's Been Implemented
 
+### Completed (March 18, 2026)
+- [x] **NEW** 18 Frame baru dengan 7 kategori populer:
+  - Minimalist (3): Clean White, Soft Cream, Black Elegant
+  - Retro (3): Vintage Film, Polaroid Classic, Y2K Vibes
+  - K-POP (3): Idol Photocard, Concert Vibe, Lightstick
+  - Aesthetic (3): Soft Pastel, Cloud Dream, Botanical
+  - Cute (3): Bunny Love, Cherry Blossom, Strawberry Milk
+  - Neon (3): Neon Pink, Cyberpunk, Holographic
+- [x] SVG-based frame previews (no external images needed)
+- [x] All pages fit viewport (h-screen layout)
+
 ### Completed (March 17, 2026)
 - [x] Landing page with GlowBox branding
 - [x] Frame Selection page with 9 frames and categories

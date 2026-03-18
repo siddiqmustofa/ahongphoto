@@ -108,20 +108,20 @@ const FrameSelect = () => {
                         ? 'border-pink-500 ring-4 ring-pink-300'
                         : 'border-white/50 hover:border-white'
                     }`}
+                    style={{ backgroundColor: frame.bgColor || '#FFD1DC' }}
                   >
-                    <img
-                      src={frame.preview}
-                      alt={frame.name}
-                      className="w-full h-full object-cover"
-                      onError={(e) => {
-                        e.target.src = 'https://via.placeholder.com/300x450/FFD1DC/FF69B4?text=Frame';
-                      }}
-                    />
-                    
-                    <div
-                      className="absolute inset-0 pointer-events-none"
-                      dangerouslySetInnerHTML={{ __html: frame.svg }}
-                    />
+                    {frame.preview ? (
+                      <img
+                        src={frame.preview}
+                        alt={frame.name}
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <div 
+                        className="w-full h-full"
+                        dangerouslySetInnerHTML={{ __html: frame.svg }}
+                      />
+                    )}
                     
                     {selectedFrame?.id === frame.id && (
                       <motion.div
@@ -158,16 +158,22 @@ const FrameSelect = () => {
                     Preview
                   </h3>
                   
-                  <div className="aspect-[2/3] rounded-xl overflow-hidden shadow-xl relative mb-3 max-h-[40vh]">
-                    <img
-                      src={selectedFrame.preview}
-                      alt={selectedFrame.name}
-                      className="w-full h-full object-cover"
-                    />
-                    <div
-                      className="absolute inset-0 pointer-events-none"
-                      dangerouslySetInnerHTML={{ __html: selectedFrame.svg }}
-                    />
+                  <div 
+                    className="aspect-[2/3] rounded-xl overflow-hidden shadow-xl relative mb-3 max-h-[40vh]"
+                    style={{ backgroundColor: selectedFrame.bgColor || '#FFD1DC' }}
+                  >
+                    {selectedFrame.preview ? (
+                      <img
+                        src={selectedFrame.preview}
+                        alt={selectedFrame.name}
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <div 
+                        className="w-full h-full"
+                        dangerouslySetInnerHTML={{ __html: selectedFrame.svg }}
+                      />
+                    )}
                   </div>
                   
                   <div className="text-center mb-3 flex-shrink-0">
